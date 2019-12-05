@@ -3,20 +3,72 @@ import java.io.*;
 
 
 public class lsrouter {
-static String topFile = "topofile";
-static String mesFile = "messagefile";
-static int[][] topology;
-static String[][] messages;
-static int mesSource, mesDes;
-static String DELIM = "\\s";
-static int topCount;
-static int MAX = Integer.MAX_VALUE;
+  static String topFile = "topofile";
+  static String mesFile = "messagefile";
+  static String changesfile = "changesfile";
+  static int[][] topology;
+  static String[][] messages;
+  static ArrayList<Integer> path = new ArrayList<Integer>();
+  static String DELIM = "\\s";
+  static int topCount;
+  static int MAX = 999;
+  static int vertices;
+  static int edges;
 
   public static void main(String[] args) {
     readFile(topFile);
     readMessage(mesFile);
+    System.out.println("MATRIX: ");
+    printM();
+    System.out.println("\nDIJKSTRA: " + 0);
+    Djikstra(0);
+    System.out.println("\nDIJKSTRA: " + 1);
+    Djikstra(1);
+    System.out.println("\nDIJKSTRA: " + 2);
+    Djikstra(2);
+    System.out.println("\nDIJKSTRA: " + 3);
+    Djikstra(3);
+    System.out.println("\nDIJKSTRA: " + 4);
     Djikstra(4);
-    //printM();
+    System.out.println("\nPATH: ");
+    printPath();
+    System.out.println("\nCHANGE 0: ");
+    readChanges(changesfile, 0);        
+    System.out.println("\nDIJKSTRA: " + 0);
+    Djikstra(0);
+    System.out.println("\nDIJKSTRA: " + 1);
+    Djikstra(1);
+    System.out.println("\nDIJKSTRA: " + 2);
+    Djikstra(2);
+    System.out.println("\nDIJKSTRA: " + 3);
+    Djikstra(3);
+    System.out.println("\nDIJKSTRA: " + 4);
+    Djikstra(4);
+    System.out.println("\nCHANGE 1: ");
+    readChanges(changesfile, 1);
+    System.out.println("\nDIJKSTRA: " + 0);
+    Djikstra(0);
+    System.out.println("\nDIJKSTRA: " + 1);
+    Djikstra(1);
+    System.out.println("\nDIJKSTRA: " + 2);
+    Djikstra(2);
+    System.out.println("\nDIJKSTRA: " + 3);
+    Djikstra(3);
+    System.out.println("\nDIJKSTRA: " + 4);
+    Djikstra(4);
+    System.out.println("\nCHANGE 2: ");
+    readChanges(changesfile, 2);
+    System.out.println("\nDIJKSTRA: " + 0);
+    Djikstra(0);
+    System.out.println("\nDIJKSTRA: " + 1);
+    Djikstra(1);
+    System.out.println("\nDIJKSTRA: " + 2);
+    Djikstra(2);
+    System.out.println("\nDIJKSTRA: " + 3);
+    Djikstra(3);
+    System.out.println("\nDIJKSTRA: " + 4);
+    Djikstra(4);
+    printM();
   } 
 
   public static void readFile(String fileName) {
@@ -27,20 +79,25 @@ static int MAX = Integer.MAX_VALUE;
         count++;
         fileScanner.nextLine();
       }
-      topCount = count;
-      topology = new int[count+1][count+1];
+      edges = count;
+      topology = new int[count][count];
       count = 0;
       fileScanner = new Scanner(new File(fileName));
-      int source = 0, destination = 0, distance = 0;
+      int source = 0, destination = 0, distance = 0, vertices = 0;
       while(fileScanner.hasNextLine()) {
         String fileLine = fileScanner.nextLine();
-        if(
-        source = Integer.parseInt(fileLine);
+        String[] splitLine = fileLine.split(DELIM);
+        source = Integer.parseInt(splitLine[0]);
         destination = Integer.parseInt(splitLine[1]);
         distance = Integer.parseInt(splitLine[2]);
-        topology[source][destination] = distance;
-        topology[destination][source] = distance;
-        count++;
+        topology[source - 1][destination - 1] = distance;
+        topology[destination - 1][source - 1] = distance;
+        if(source > vertices) {
+          vertices = source;
+        }
+        else if(destination > vertices) {
+          vertices = destination;
+        }
       }
       for(int i = 0; i < topology.length; i++) {
         for(int j = 0; j < topology[i].length; j++) {
@@ -49,15 +106,18 @@ static int MAX = Integer.MAX_VALUE;
           }
         }
       }
+      topCount = vertices;
     }
     catch(Exception e) {
       e.printStackTrace();
     }
   }
+  
   public static void readMessage(String fileName) {
     try {
       Scanner fileScanner = new Scanner(new File(fileName));
-      messages = new String[topCount+1][topCount+1];
+      messages = new String[topCount][topCount];
+      int mesSource = 0, mesDes = 0;
       while(fileScanner.hasNextLine()) {
         String temp = "";
         String fileLine = fileScanner.nextLine();
@@ -65,9 +125,9 @@ static int MAX = Integer.MAX_VALUE;
         mesSource = Integer.parseInt(splitLine[0]);
         mesDes = Integer.parseInt(splitLine[1]);
         for(int i = 2; i < splitLine.length; i++) {
-          temp += splitLine[i]+ " ";
+          temp += splitLine[i] + " ";
         }
-        messages[mesSource][mesDes] = temp;
+        messages[mesSource - 1][mesDes - 1] = temp;
         
       }
     }
@@ -76,38 +136,64 @@ static int MAX = Integer.MAX_VALUE;
     }
   }
 
-  public static void Djikstra(int source) {
-    int[] distances = new int[topCount+1];
-    Boolean[] shortPath = new Boolean[topCount+1];
+  public static void readChanges(String fileName, int line) {
+    try {
+      Scanner fileScanner = new Scanner(new File(fileName));
+      int current = 0;
+      int source = 0, destination = 0, distance = 0;
+      while (true) {
+        if (current == line) {
+          String fileLine = fileScanner.nextLine();
+          String[] splitLine = fileLine.split(DELIM);
+          source = Integer.parseInt(splitLine[0]);
+          destination = Integer.parseInt(splitLine[1]);
+          distance = Math.abs(Integer.parseInt(splitLine[2]));
+          topology[source - 1][destination - 1] = distance;
+          topology[destination - 1][source - 1] = distance;
+          break;
+        }
+        current++;
+        fileScanner.nextLine();
+      }
+    }
+    catch (Exception e) {}
+  }
 
-    for(int i = 1; i < topCount + 1; i++) {
+  public static void Djikstra(int source) {
+    int[] distances = new int[topCount];
+    Boolean[] shortPath = new Boolean[topCount];
+
+    for(int i = 0; i < topCount; i++) {
       distances[i] = MAX;
       shortPath[i] = false;
     }
     distances[source] = 0;
-    for(int i = 1; i < topCount; i++) {
-      int min = minDistance(distances,shortPath);
-      System.out.println("TEST: "+ min);
+    int min = 0;
+    for(int i = 0; i < topCount - 1; i++) {
+      min = minDistance(distances, shortPath);
       shortPath[min] = true;
-      
-      for(int j = 1; j < topCount+1; j++) {
-        if(!shortPath[j] && topology[min][j] != 0 && distances[min] !=
-            MAX && distances[min] + topology[min][j] <
-            distances[j]) {
-              distances[j] = distances[min] + topology[min][j];
+      for(int j = 0; j < topCount; j++) {
+        if(!shortPath[j] && topology[min][j] != 0 && distances[min] != MAX && distances[min] + topology[min][j] < distances[j]) {
+          distances[j] = distances[min] + topology[min][j];
         }
       }
 
     }
-    /*for(int i = 1; i < topCount+1; i++) {
-      System.out.println(shortPath[i]);
-    }*/
+    int leastIndex = 9999;
+    int least = 9999;
+    for (int i = 0; i < distances.length; i++) {
+      if (distances[i] < least && distances[i] != 0) {
+        least = distances[i];
+        leastIndex = i;
+      }
+    }
+    path.add(leastIndex);
     printP(distances);
   }
 
   public static int minDistance(int[] distances, Boolean[] shortPath) {
     int min = MAX, minIndex = -1;
-    for(int i = 1; i < topCount+1; i++) {
+    for(int i = 0; i < topCount; i++) {
       if(shortPath[i] != true && distances[i] <= min) {
         min = distances[i];
         minIndex = i;
@@ -115,20 +201,25 @@ static int MAX = Integer.MAX_VALUE;
     }
     return minIndex;
   }
-
+  
   public static void printP(int[] distances) {
-    for(int i = 1; i < topCount +1; i++) {
+    for(int i = 0; i < topCount; i++) {
       System.out.println(i + "\t" + distances[i]);
     }
   }
 
+  public static void printPath() {
+    for (int i = 0; i < path.size(); i++) {
+      System.out.println(path.get(i));
+    }
+  }
+
   public static void printM() {
-    for(int i = 1; i < topCount + 1; i++) {
-      for(int j = 1; j < topCount + 1; j++) {
+    for(int i = 0; i < topCount; i++) {
+      for(int j = 0; j < topCount; j++) {
         System.out.print(topology[i][j] + " "); 
       }
       System.out.println();
     }
   }
 }
-

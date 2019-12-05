@@ -3,7 +3,8 @@ import java.io.*;
 
 public class dvrouter {
 	static String topFile = "topofile";
-	static String mesFile = "messagefile";
+  static String mesFile = "messagefile";
+  static String changesfile = "changesfile";
 	static int[][] topology;
 	static String[][] messages;
 	static String DELIM = "\\s";
@@ -17,6 +18,42 @@ public class dvrouter {
     readMessage(mesFile);
     System.out.println("MATRIX: ");
     printM();
+    System.out.println("\nBELLMAN-FORD: " + 0);
+    BellmanFord(0);
+    System.out.println("\nBELLMAN-FORD: " + 1);
+    BellmanFord(1);
+    System.out.println("\nBELLMAN-FORD: " + 2);
+    BellmanFord(2);
+    System.out.println("\nBELLMAN-FORD: " + 3);
+    BellmanFord(3);
+    System.out.println("\nBELLMAN-FORD: " + 4);
+    BellmanFord(4);
+    System.out.println("\nCHANGE 0: ");
+    readChanges(changesfile, 0);
+    System.out.println("\nBELLMAN-FORD: " + 0);
+    BellmanFord(0);
+    System.out.println("\nBELLMAN-FORD: " + 1);
+    BellmanFord(1);
+    System.out.println("\nBELLMAN-FORD: " + 2);
+    BellmanFord(2);
+    System.out.println("\nBELLMAN-FORD: " + 3);
+    BellmanFord(3);
+    System.out.println("\nBELLMAN-FORD: " + 4);
+    BellmanFord(4);
+    System.out.println("\nCHANGE 1: ");
+    readChanges(changesfile, 1);
+    System.out.println("\nBELLMAN-FORD: " + 0);
+    BellmanFord(0);
+    System.out.println("\nBELLMAN-FORD: " + 1);
+    BellmanFord(1);
+    System.out.println("\nBELLMAN-FORD: " + 2);
+    BellmanFord(2);
+    System.out.println("\nBELLMAN-FORD: " + 3);
+    BellmanFord(3);
+    System.out.println("\nBELLMAN-FORD: " + 4);
+    BellmanFord(4);
+    System.out.println("\nCHANGE 2: ");
+    readChanges(changesfile, 2);
     System.out.println("\nBELLMAN-FORD: " + 0);
     BellmanFord(0);
     System.out.println("\nBELLMAN-FORD: " + 1);
@@ -41,7 +78,7 @@ public class dvrouter {
       topology = new int[count][count];
       count = 0;
       fileScanner = new Scanner(new File(fileName));
-      int source = 0, destination = 0, distance = 0, vertices = 0;
+      int source = 0, destination = 0, distance = 0;
       while(fileScanner.hasNextLine()) {
         String fileLine = fileScanner.nextLine();
         String[] splitLine = fileLine.split(DELIM);
@@ -92,6 +129,29 @@ public class dvrouter {
     catch(Exception e) {
       e.printStackTrace();
     }
+  }
+
+  public static void readChanges(String fileName, int line) {
+    try {
+      Scanner fileScanner = new Scanner(new File(fileName));
+      int current = 0;
+      int source = 0, destination = 0, distance = 0, vertices = 0;
+      while (true) {
+        if (current == line) {
+          String fileLine = fileScanner.nextLine();
+          String[] splitLine = fileLine.split(DELIM);
+          source = Integer.parseInt(splitLine[0]);
+          destination = Integer.parseInt(splitLine[1]);
+          distance = Math.abs(Integer.parseInt(splitLine[2]));
+          topology[source - 1][destination - 1] = distance;
+          topology[destination - 1][source - 1] = distance;
+          break;
+        }
+        current++;
+        fileScanner.nextLine();
+      }
+    }
+    catch (Exception e) {}
   }
   
   public static void BellmanFord(int source) {
