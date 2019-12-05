@@ -3,22 +3,41 @@ import java.io.*;
 
 
 public class ls2 {
-static String topFile = "topofile";
-static String mesFile = "messagefile";
-static int[][] topology;
-static String[][] messages;
-static int mesSource, mesDes;
-static String DELIM = "\\s";
-static int topCount;
-static int MAX = 999;
-static int vertices;
-static int edges;
+  static String topFile = "topofile";
+  static String mesFile = "messagefile";
+  static int[][] topology;
+  static String[][] messages;
+  static String DELIM = "\\s";
+  static int topCount;
+  static int MAX = 999;
+  static int vertices;
+  static int edges;
 
   public static void main(String[] args) {
     readFile(topFile);
     readMessage(mesFile);
-    BellmanFord(3);
+    System.out.println("MATRIX: ");
     printM();
+    System.out.println("\nDIJKSTRA: " + 0);
+    Djikstra(0);
+    System.out.println("\nDIJKSTRA: " + 1);
+    Djikstra(1);
+    System.out.println("\nDIJKSTRA: " + 2);
+    Djikstra(2);
+    System.out.println("\nDIJKSTRA: " + 3);
+    Djikstra(3);
+    System.out.println("\nDIJKSTRA: " + 4);
+    Djikstra(4);
+    System.out.println("\nBELLMAN-FORD: " + 0);
+    BellmanFord(0);
+    System.out.println("\nBELLMAN-FORD: " + 1);
+    BellmanFord(1);
+    System.out.println("\nBELLMAN-FORD: " + 2);
+    BellmanFord(2);
+    System.out.println("\nBELLMAN-FORD: " + 3);
+    BellmanFord(3);
+    System.out.println("\nBELLMAN-FORD: " + 4);
+    BellmanFord(4);
   } 
 
   public static void readFile(String fileName) {
@@ -40,8 +59,8 @@ static int edges;
         source = Integer.parseInt(splitLine[0]);
         destination = Integer.parseInt(splitLine[1]);
         distance = Integer.parseInt(splitLine[2]);
-        topology[source-1][destination-1] = distance;
-        topology[destination-1][source-1] = distance;
+        topology[source - 1][destination - 1] = distance;
+        topology[destination - 1][source - 1] = distance;
         if(source > vertices) {
           vertices = source;
         }
@@ -56,17 +75,18 @@ static int edges;
           }
         }
       }
-      System.out.println("# of vertex: "+vertices);
       topCount = vertices;
     }
     catch(Exception e) {
       e.printStackTrace();
     }
   }
+  
   public static void readMessage(String fileName) {
     try {
       Scanner fileScanner = new Scanner(new File(fileName));
       messages = new String[topCount][topCount];
+      int mesSource = 0, mesDes = 0;
       while(fileScanner.hasNextLine()) {
         String temp = "";
         String fileLine = fileScanner.nextLine();
@@ -74,9 +94,9 @@ static int edges;
         mesSource = Integer.parseInt(splitLine[0]);
         mesDes = Integer.parseInt(splitLine[1]);
         for(int i = 2; i < splitLine.length; i++) {
-          temp += splitLine[i]+ " ";
+          temp += splitLine[i] + " ";
         }
-        messages[mesSource-1][mesDes-1] = temp;
+        messages[mesSource - 1][mesDes - 1] = temp;
         
       }
     }
@@ -94,23 +114,17 @@ static int edges;
       shortPath[i] = false;
     }
     distances[source] = 0;
-    for(int i = 0; i < topCount-1; i++) {
-      int min = minDistance(distances,shortPath);
-      System.out.println("TEST: "+ min);
+    for(int i = 0; i < topCount - 1; i++) {
+      int min = minDistance(distances, shortPath);
       shortPath[min] = true;
       
       for(int j = 0; j < topCount; j++) {
-        if(!shortPath[j] && topology[min][j] != 0 && distances[min] !=
-            MAX && distances[min] + topology[min][j] <
-            distances[j]) {
-              distances[j] = distances[min] + topology[min][j];
+        if(!shortPath[j] && topology[min][j] != 0 && distances[min] != MAX && distances[min] + topology[min][j] < distances[j]) {
+          distances[j] = distances[min] + topology[min][j];
         }
       }
 
     }
-    /*for(int i = 1; i < topCount+1; i++) {
-      System.out.println(shortPath[i]);
-    }*/
     printP(distances);
   }
 
@@ -130,14 +144,23 @@ static int edges;
     for(int i = 0; i < topCount; i++) {
       distances[i] = MAX;
     }
-    System.out.println(topology[0][0]);
     distances[source] = 0;
     for(int i = 0; i < topCount - 1; i++) {
-      for(int j = 0; j < edges; j++) {
-        if(distances[topology[j][0]] + topology[j][2] <
-            distances[topology[j][1]]) {
-            distances[topology[j][1]] = distances[topology[j][0]] +
-              topology[j][2];
+      for(int j = 0; j < topCount; j++) {
+        if (topology[i][j] != MAX) {
+          if(distances[j] > distances[i] + topology[i][j]) {
+            distances[j] = distances[i] + topology[i][j];
+          }
+        }
+      }
+    }
+    // Negative weight cycles
+    for (int i = 0; i < vertices; i++) {
+      for (int j = 0; j < vertices; j++) {
+        if (topology[i][j] != MAX) {
+          if (distances[j] > distances[i] + topology[i][j]) {
+            System.out.println("NEGATIVE WEIGHT CYCLE FOUND");
+          }
         }
       }
     }
