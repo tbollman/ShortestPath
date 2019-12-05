@@ -139,6 +139,16 @@ public class ls2 {
     return minIndex;
   }
 
+  public static int[][] makeOneIndexed() {
+    int[][] oneIndex = new int[vertices + 1][vertices + 1];
+    for (int i = 1; i <= oneIndex.length; i++) {
+      for (int j = 1; j <= oneIndex[i].length; j++) {
+        oneIndex[i][j] = topology[i - 1][j - 1];
+      }
+    }
+    return oneIndex;
+  }
+
   public static void BellmanFord(int source) {
     int[] distances = new int[topCount];
     for(int i = 0; i < topCount; i++) {
@@ -147,9 +157,10 @@ public class ls2 {
     distances[source] = 0;
     for(int i = 0; i < topCount - 1; i++) {
       for(int j = 0; j < topCount; j++) {
-        if (topology[i][j] != MAX) {
-          if(distances[j] > distances[i] + topology[i][j]) {
-            distances[j] = distances[i] + topology[i][j];
+        for (int k = 0; k < topCount; k++)
+        if (topology[j][k] != MAX) {
+          if(distances[k] > distances[j] + topology[j][k]) {
+            distances[k] = distances[j] + topology[j][k];
           }
         }
       }
