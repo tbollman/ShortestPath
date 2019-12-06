@@ -9,9 +9,12 @@ public class lsrouter {
   static String outputFile = "output.txt";
   static int[][] topology;
   static int[] distances;
-  static int[] nHops;
-  static String nextHops = "";
+  static String[] nextHops;
+  static String hops;
+  static int count = 0;
   static String[][] messages;
+  static String two2one;
+  static String three2five;
   static String DELIM = "\\s";
   static int topCount;
   static int MAX = 999;
@@ -21,59 +24,37 @@ public class lsrouter {
   public static void main(String[] args) {
     readFile(topFile);
     readMessage(mesFile);
-
-    System.out.println("MATRIX: ");
-    printM();
-
-    System.out.println("\nDIJKSTRA: " + 1);
+    
     Djikstra(0);
-    System.out.println("\n\nDIJKSTRA: " + 2);
     Djikstra(1);
-    System.out.println("\n\nDIJKSTRA: " + 3);
     Djikstra(2);
-    System.out.println("\n\nDIJKSTRA: " + 4);
     Djikstra(3);
-    System.out.println("\n\nDIJKSTRA: " + 5);
     Djikstra(4);
+    writeMessages(two2one, three2five);
 
-    System.out.println("\n\n\nCHANGE 0: ");
-    readChanges(changesFile, 0);        
-    System.out.println("\n\nDIJKSTRA: " + 1);
+    readChanges(changesFile, 0);
     Djikstra(0);
-    System.out.println("\n\nDIJKSTRA: " + 2);
     Djikstra(1);
-    System.out.println("\n\nDIJKSTRA: " + 3);
     Djikstra(2);
-    System.out.println("\n\nDIJKSTRA: " + 4);
     Djikstra(3);
-    System.out.println("\n\nDIJKSTRA: " + 5);
     Djikstra(4);
+    writeMessages(two2one, three2five);
 
-    System.out.println("\n\n\nCHANGE 1: ");
     readChanges(changesFile, 1);
-    System.out.println("\n\nDIJKSTRA: " + 1);
     Djikstra(0);
-    System.out.println("\n\nDIJKSTRA: " + 2);
     Djikstra(1);
-    System.out.println("\n\nDIJKSTRA: " + 3);
     Djikstra(2);
-    System.out.println("\n\nDIJKSTRA: " + 4);
     Djikstra(3);
-    System.out.println("\n\nDIJKSTRA: " + 5);
     Djikstra(4);
+    writeMessages(two2one, three2five);
 
-    System.out.println("\n\n\nCHANGE 2: ");
     readChanges(changesFile, 2);
-    System.out.println("\n\nDIJKSTRA: " + 1);
     Djikstra(0);
-    System.out.println("\n\nDIJKSTRA: " + 2);
     Djikstra(1);
-    System.out.println("\n\nDIJKSTRA: " + 3);
     Djikstra(2);
-    System.out.println("\n\nDIJKSTRA: " + 4);
     Djikstra(3);
-    System.out.println("\n\nDIJKSTRA: " + 5);
     Djikstra(4);
+    writeMessages(two2one, three2five);
   } 
 
   public static void readFile(String fileName) {
@@ -192,42 +173,55 @@ public class lsrouter {
         }
       }
     }
-    printSolution(source, distances, parents);
+    nextHops = new String[topCount];
+    count = 0;
+    printSolution(source, distances, parents, nextHops);
+  }
+
+  public static void printSolution(int startVertex, int[] distances, int[] parents, String[] nextHops) {
+    for (int vertexIndex = 0; vertexIndex < topCount; vertexIndex++) {
+      hops = printPath(vertexIndex, parents);
+      if (startVertex == 1 && vertexIndex == 0) {
+        two2one = hops;
+      } else if (startVertex == 2 && vertexIndex == 4) {
+        three2five = hops;
+      }
+      if (hops.length() == 2) {
+        nextHops[startVertex] = String.valueOf(hops.charAt(0));
+        count++;
+      } else {
+        nextHops[count] = String.valueOf(hops.charAt(2));
+        count++;
+      }
+    }
     writeTables();
   }
 
-  public static void printSolution(int startVertex, int[] distances, int[] parents) {
-    System.out.print("Vertex\t Distance\tPath");
-    for (int vertexIndex = 0; vertexIndex < topCount; vertexIndex++) {
-      System.out.print("\n" + (startVertex + 1) + " -> ");
-      System.out.print((vertexIndex + 1) + " \t\t ");
-      System.out.print(distances[vertexIndex] + "\t\t");
-      printPath(vertexIndex, parents);
-    }
+  public static void writeMessages(String two2one, String three2five) {
+    try {
+      PrintWriter fileWriter = new PrintWriter(new FileWriter(outputFile, true));
+      fileWriter.println("from 2 to 1: hops" + two2one + "; message: " + messages[1][0]);
+      fileWriter.println("from 3 to 5: hops" + three2five + "; message: " + messages[2][4]);
+      fileWriter.println("");
+      fileWriter.println("");
+      fileWriter.close();
+      two2one = "";
+      three2five = "";
+    } catch (Exception e) {}
   }
 
-  public static void printPath(int currentVertex, int[] parents) {
+  public static String printPath(int currentVertex, int[] parents) {
     if (currentVertex == -1) {
-      return;
+      return "";
     }
-    printPath(parents[currentVertex], parents);
-    System.out.print((currentVertex + 1) + " ");
-  }
-
-  public static void printM() {
-    for(int i = 0; i < topCount; i++) {
-      for(int j = 0; j < topCount; j++) {
-        System.out.print(topology[i][j] + " "); 
-      }
-      System.out.println();
-    }
+    return printPath(parents[currentVertex], parents) + " " + (currentVertex + 1);
   }
 
   public static void writeTables() {
     try {
       PrintWriter fileWriter = new PrintWriter(new FileWriter(outputFile, true));
       for (int i = 0; i < topCount; i++) {
-        fileWriter.println((i + 1) + " " + "0" + " " + distances[i]);
+        fileWriter.println((i + 1) + " " + nextHops[i] + " " + distances[i]);
       }
       fileWriter.println("");
       fileWriter.close();

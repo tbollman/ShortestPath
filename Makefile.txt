@@ -1,0 +1,14 @@
+# Makefile for JAVA network programs
+
+default: lsrouter.class dvrouter.class
+
+# lsrouter
+lsrouter.class: lsrouter.java
+	javac lsrouter.java
+
+# dvrouter
+dvrouter.class: dvrouter.java
+	javac dvrouter.java
+
+clean:
+	rm -rf *.class \

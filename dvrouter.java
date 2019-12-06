@@ -16,53 +16,32 @@ public class dvrouter {
   public static void main(String[] args) {
     readFile(topFile);
     readMessage(mesFile);
-    System.out.println("MATRIX: ");
-    printM();
-    System.out.println("\nBELLMAN-FORD: " + 0);
+
     BellmanFord(0);
-    System.out.println("\nBELLMAN-FORD: " + 1);
     BellmanFord(1);
-    System.out.println("\nBELLMAN-FORD: " + 2);
     BellmanFord(2);
-    System.out.println("\nBELLMAN-FORD: " + 3);
     BellmanFord(3);
-    System.out.println("\nBELLMAN-FORD: " + 4);
     BellmanFord(4);
-    System.out.println("\nCHANGE 0: ");
+
     readChanges(changesfile, 0);
-    System.out.println("\nBELLMAN-FORD: " + 0);
     BellmanFord(0);
-    System.out.println("\nBELLMAN-FORD: " + 1);
     BellmanFord(1);
-    System.out.println("\nBELLMAN-FORD: " + 2);
     BellmanFord(2);
-    System.out.println("\nBELLMAN-FORD: " + 3);
     BellmanFord(3);
-    System.out.println("\nBELLMAN-FORD: " + 4);
     BellmanFord(4);
-    System.out.println("\nCHANGE 1: ");
+
     readChanges(changesfile, 1);
-    System.out.println("\nBELLMAN-FORD: " + 0);
     BellmanFord(0);
-    System.out.println("\nBELLMAN-FORD: " + 1);
     BellmanFord(1);
-    System.out.println("\nBELLMAN-FORD: " + 2);
     BellmanFord(2);
-    System.out.println("\nBELLMAN-FORD: " + 3);
     BellmanFord(3);
-    System.out.println("\nBELLMAN-FORD: " + 4);
     BellmanFord(4);
-    System.out.println("\nCHANGE 2: ");
+
     readChanges(changesfile, 2);
-    System.out.println("\nBELLMAN-FORD: " + 0);
     BellmanFord(0);
-    System.out.println("\nBELLMAN-FORD: " + 1);
     BellmanFord(1);
-    System.out.println("\nBELLMAN-FORD: " + 2);
     BellmanFord(2);
-    System.out.println("\nBELLMAN-FORD: " + 3);
     BellmanFord(3);
-    System.out.println("\nBELLMAN-FORD: " + 4);
     BellmanFord(4);
   } 
   
@@ -179,22 +158,6 @@ public class dvrouter {
           }
         }
       }
-    }
-    printP(distances);
-  }
-
-  public static void printP(int[] distances) {
-    for(int i = 0; i < topCount; i++) {
-      System.out.println(i + "\t" + distances[i]);
-    }
-  }
-
-  public static void printM() {
-    for(int i = 0; i < topCount; i++) {
-      for(int j = 0; j < topCount; j++) {
-        System.out.print(topology[i][j] + " "); 
-      }
-      System.out.println();
     }
   }
 }
