@@ -177,17 +177,16 @@ public class lsrouter {
           distances[j] = distances[min] + topology[min][j];
         }
       }
-
-    }
-    int leastIndex = 9999;
-    int least = 9999;
-    for (int i = 0; i < distances.length; i++) {
-      if (distances[i] < least && distances[i] != 0) {
-        least = distances[i];
-        leastIndex = i;
+      int leastIndex = 9999;
+      int least = 9999;
+      for (int j = 0; j < distances.length; j++) {
+        if (distances[j] < least && distances[j] != 0) {
+          least = distances[j];
+          leastIndex = j;
+        }
       }
+      path.add(leastIndex);
     }
-    path.add(leastIndex);
     printP(distances);
   }
 
