@@ -5,10 +5,13 @@ import java.io.*;
 public class lsrouter {
   static String topFile = "topofile";
   static String mesFile = "messagefile";
-  static String changesfile = "changesfile";
+  static String changesFile = "changesfile";
+  static String outputFile = "output.txt";
   static int[][] topology;
+  static int[] distances;
+  static int[] nHops;
+  static String nextHops = "";
   static String[][] messages;
-  static ArrayList<Integer> path = new ArrayList<Integer>();
   static String DELIM = "\\s";
   static int topCount;
   static int MAX = 999;
@@ -18,57 +21,59 @@ public class lsrouter {
   public static void main(String[] args) {
     readFile(topFile);
     readMessage(mesFile);
+
     System.out.println("MATRIX: ");
     printM();
-    System.out.println("\nDIJKSTRA: " + 0);
-    Djikstra(0);
+
     System.out.println("\nDIJKSTRA: " + 1);
-    Djikstra(1);
-    System.out.println("\nDIJKSTRA: " + 2);
-    Djikstra(2);
-    System.out.println("\nDIJKSTRA: " + 3);
-    Djikstra(3);
-    System.out.println("\nDIJKSTRA: " + 4);
-    Djikstra(4);
-    System.out.println("\nPATH: ");
-    printPath();
-    System.out.println("\nCHANGE 0: ");
-    readChanges(changesfile, 0);        
-    System.out.println("\nDIJKSTRA: " + 0);
     Djikstra(0);
-    System.out.println("\nDIJKSTRA: " + 1);
+    System.out.println("\n\nDIJKSTRA: " + 2);
     Djikstra(1);
-    System.out.println("\nDIJKSTRA: " + 2);
+    System.out.println("\n\nDIJKSTRA: " + 3);
     Djikstra(2);
-    System.out.println("\nDIJKSTRA: " + 3);
+    System.out.println("\n\nDIJKSTRA: " + 4);
     Djikstra(3);
-    System.out.println("\nDIJKSTRA: " + 4);
+    System.out.println("\n\nDIJKSTRA: " + 5);
     Djikstra(4);
-    System.out.println("\nCHANGE 1: ");
-    readChanges(changesfile, 1);
-    System.out.println("\nDIJKSTRA: " + 0);
+
+    System.out.println("\n\n\nCHANGE 0: ");
+    readChanges(changesFile, 0);        
+    System.out.println("\n\nDIJKSTRA: " + 1);
     Djikstra(0);
-    System.out.println("\nDIJKSTRA: " + 1);
+    System.out.println("\n\nDIJKSTRA: " + 2);
     Djikstra(1);
-    System.out.println("\nDIJKSTRA: " + 2);
+    System.out.println("\n\nDIJKSTRA: " + 3);
     Djikstra(2);
-    System.out.println("\nDIJKSTRA: " + 3);
+    System.out.println("\n\nDIJKSTRA: " + 4);
     Djikstra(3);
-    System.out.println("\nDIJKSTRA: " + 4);
+    System.out.println("\n\nDIJKSTRA: " + 5);
     Djikstra(4);
-    System.out.println("\nCHANGE 2: ");
-    readChanges(changesfile, 2);
-    System.out.println("\nDIJKSTRA: " + 0);
+
+    System.out.println("\n\n\nCHANGE 1: ");
+    readChanges(changesFile, 1);
+    System.out.println("\n\nDIJKSTRA: " + 1);
     Djikstra(0);
-    System.out.println("\nDIJKSTRA: " + 1);
+    System.out.println("\n\nDIJKSTRA: " + 2);
     Djikstra(1);
-    System.out.println("\nDIJKSTRA: " + 2);
+    System.out.println("\n\nDIJKSTRA: " + 3);
     Djikstra(2);
-    System.out.println("\nDIJKSTRA: " + 3);
+    System.out.println("\n\nDIJKSTRA: " + 4);
     Djikstra(3);
-    System.out.println("\nDIJKSTRA: " + 4);
+    System.out.println("\n\nDIJKSTRA: " + 5);
     Djikstra(4);
-    printM();
+
+    System.out.println("\n\n\nCHANGE 2: ");
+    readChanges(changesFile, 2);
+    System.out.println("\n\nDIJKSTRA: " + 1);
+    Djikstra(0);
+    System.out.println("\n\nDIJKSTRA: " + 2);
+    Djikstra(1);
+    System.out.println("\n\nDIJKSTRA: " + 3);
+    Djikstra(2);
+    System.out.println("\n\nDIJKSTRA: " + 4);
+    Djikstra(3);
+    System.out.println("\n\nDIJKSTRA: " + 5);
+    Djikstra(4);
   } 
 
   public static void readFile(String fileName) {
@@ -160,57 +165,53 @@ public class lsrouter {
   }
 
   public static void Djikstra(int source) {
-    int[] distances = new int[topCount];
-    Boolean[] shortPath = new Boolean[topCount];
-
+    distances = new int[topCount];
+    Boolean[] added = new Boolean[topCount];
     for(int i = 0; i < topCount; i++) {
       distances[i] = MAX;
-      shortPath[i] = false;
+      added[i] = false;
     }
     distances[source] = 0;
-    int min = 0;
-    for(int i = 0; i < topCount - 1; i++) {
-      min = minDistance(distances, shortPath);
-      shortPath[min] = true;
-      for(int j = 0; j < topCount; j++) {
-        if(!shortPath[j] && topology[min][j] != 0 && distances[min] != MAX && distances[min] + topology[min][j] < distances[j]) {
-          distances[j] = distances[min] + topology[min][j];
+    int[] parents = new int[topCount];
+    parents[source] = -1;
+    for(int i = 1; i < topCount; i++) {
+      int nearestVertex = -1;
+      int shortestDistance = MAX;
+      for (int vertexIndex = 0; vertexIndex < topCount; vertexIndex++) {
+        if (!added[vertexIndex] && distances[vertexIndex] < shortestDistance) {
+          nearestVertex = vertexIndex;
+          shortestDistance = distances[vertexIndex];
         }
       }
-      int leastIndex = 9999;
-      int least = 9999;
-      for (int j = 0; j < distances.length; j++) {
-        if (distances[j] < least && distances[j] != 0) {
-          least = distances[j];
-          leastIndex = j;
+      added[nearestVertex] = true;
+      for (int vertexIndex = 0; vertexIndex < topCount; vertexIndex++) {
+        int edgeDistance = topology[nearestVertex][vertexIndex];
+        if (edgeDistance > 0 && ((shortestDistance + edgeDistance) < distances[vertexIndex])) {
+          parents[vertexIndex] = nearestVertex;
+          distances[vertexIndex] = shortestDistance + edgeDistance;
         }
       }
-      path.add(leastIndex);
     }
-    printP(distances);
+    printSolution(source, distances, parents);
+    writeTables();
   }
 
-  public static int minDistance(int[] distances, Boolean[] shortPath) {
-    int min = MAX, minIndex = -1;
-    for(int i = 0; i < topCount; i++) {
-      if(shortPath[i] != true && distances[i] <= min) {
-        min = distances[i];
-        minIndex = i;
-      }
-    }
-    return minIndex;
-  }
-  
-  public static void printP(int[] distances) {
-    for(int i = 0; i < topCount; i++) {
-      System.out.println(i + "\t" + distances[i]);
+  public static void printSolution(int startVertex, int[] distances, int[] parents) {
+    System.out.print("Vertex\t Distance\tPath");
+    for (int vertexIndex = 0; vertexIndex < topCount; vertexIndex++) {
+      System.out.print("\n" + (startVertex + 1) + " -> ");
+      System.out.print((vertexIndex + 1) + " \t\t ");
+      System.out.print(distances[vertexIndex] + "\t\t");
+      printPath(vertexIndex, parents);
     }
   }
 
-  public static void printPath() {
-    for (int i = 0; i < path.size(); i++) {
-      System.out.println(path.get(i));
+  public static void printPath(int currentVertex, int[] parents) {
+    if (currentVertex == -1) {
+      return;
     }
+    printPath(parents[currentVertex], parents);
+    System.out.print((currentVertex + 1) + " ");
   }
 
   public static void printM() {
@@ -220,5 +221,16 @@ public class lsrouter {
       }
       System.out.println();
     }
+  }
+
+  public static void writeTables() {
+    try {
+      PrintWriter fileWriter = new PrintWriter(new FileWriter(outputFile, true));
+      for (int i = 0; i < topCount; i++) {
+        fileWriter.println((i + 1) + " " + "0" + " " + distances[i]);
+      }
+      fileWriter.println("");
+      fileWriter.close();
+    } catch (Exception e) {}
   }
 }
