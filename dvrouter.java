@@ -2,16 +2,23 @@ import java.util.*;
 import java.io.*;
 
 public class dvrouter {
-	static String topFile = "topofile";
+  static String topFile = "topofile";
   static String mesFile = "messagefile";
-  static String changesfile = "changesfile";
-	static int[][] topology;
-	static String[][] messages;
-	static String DELIM = "\\s";
-	static int topCount;
-	static int MAX = 999;
-	static int vertices;
-	static int edges;
+  static String changesFile = "changesfile";
+  static String outputFile = "output.txt";
+  static int[][] topology;
+  static int[] distances;
+  static String[] nextHops;
+  static String hops;
+  static int count = 0;
+  static String[][] messages;
+  static String two2one;
+  static String three2five;
+  static String DELIM = "\\s";
+  static int topCount;
+  static int MAX = 999;
+  static int vertices;
+  static int edges;
 
   public static void main(String[] args) {
     readFile(topFile);
@@ -22,27 +29,31 @@ public class dvrouter {
     BellmanFord(2);
     BellmanFord(3);
     BellmanFord(4);
+	writeMessages(two2one, three2five);
 
-    readChanges(changesfile, 0);
+    readChanges(changesFile, 0);
     BellmanFord(0);
     BellmanFord(1);
     BellmanFord(2);
     BellmanFord(3);
     BellmanFord(4);
+	writeMessages(two2one, three2five);
 
-    readChanges(changesfile, 1);
+    readChanges(changesFile, 1);
     BellmanFord(0);
     BellmanFord(1);
     BellmanFord(2);
     BellmanFord(3);
     BellmanFord(4);
+	writeMessages(two2one, three2five);
 
-    readChanges(changesfile, 2);
+    readChanges(changesFile, 2);
     BellmanFord(0);
     BellmanFord(1);
     BellmanFord(2);
     BellmanFord(3);
     BellmanFord(4);
+	writeMessages(two2one, three2five);
   } 
   
     public static void readFile(String fileName) {
@@ -159,5 +170,55 @@ public class dvrouter {
         }
       }
     }
+  }
+  
+  public static void printSolution(int startVertex, int[] distances, int[] parents, String[] nextHops) {
+    for (int vertexIndex = 0; vertexIndex < topCount; vertexIndex++) {
+      hops = printPath(vertexIndex, parents);
+      if (startVertex == 1 && vertexIndex == 0) {
+        two2one = hops;
+      } else if (startVertex == 2 && vertexIndex == 4) {
+        three2five = hops;
+      }
+      if (hops.length() == 2) {
+        nextHops[startVertex] = String.valueOf(hops.charAt(0));
+        count++;
+      } else {
+        nextHops[count] = String.valueOf(hops.charAt(2));
+        count++;
+      }
+    }
+    writeTables();
+  }
+
+  public static void writeMessages(String two2one, String three2five) {
+    try {
+      PrintWriter fileWriter = new PrintWriter(new FileWriter(outputFile, true));
+      fileWriter.println("from 2 to 1: hops" + two2one + "; message: " + messages[1][0]);
+      fileWriter.println("from 3 to 5: hops" + three2five + "; message: " + messages[2][4]);
+      fileWriter.println("");
+      fileWriter.println("");
+      fileWriter.close();
+      two2one = "";
+      three2five = "";
+    } catch (Exception e) {}
+  }
+
+  public static String printPath(int currentVertex, int[] parents) {
+    if (currentVertex == -1) {
+      return "";
+    }
+    return printPath(parents[currentVertex], parents) + " " + (currentVertex + 1);
+  }
+
+  public static void writeTables() {
+    try {
+      PrintWriter fileWriter = new PrintWriter(new FileWriter(outputFile, true));
+      for (int i = 0; i < topCount; i++) {
+        fileWriter.println((i + 1) + " " + nextHops[i] + " " + distances[i]);
+      }
+      fileWriter.println("");
+      fileWriter.close();
+    } catch (Exception e) {}
   }
 }
